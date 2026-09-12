@@ -4,7 +4,7 @@
     <nav v-if="auth.isLoggedIn" class="navbar">
       <div class="nav-left">
         <div class="nav-brand">
-          <router-link to="/">
+          <router-link to="/links">
             <svg viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align: middle; margin-right: 8px;">
               <path d="M8 8 L24 8 L20 16 L24 24 L8 24 L12 16 Z" fill="none" stroke="url(#navg)" stroke-width="1.5"/>
               <defs>
