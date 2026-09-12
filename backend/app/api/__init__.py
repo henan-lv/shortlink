@@ -5,6 +5,7 @@ from . import admin_users as admin_users_module
 from . import auth as auth_module
 from . import health as health_module
 from . import links as links_module
+from . import metrics as metrics_module
 from . import password as password_module
 from . import short_link as short_link_module
 from . import stats as stats_module
@@ -15,6 +16,7 @@ ALL_BLUEPRINTS = [
     stats_module.bp,
     links_module.bp,
     auth_module.bp,
+    metrics_module.bp,
     password_module.bp,
     access_rules_module.bp,
     admin_users_module.bp,

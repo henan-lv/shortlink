@@ -8,6 +8,11 @@ from ..services import short_link as svc
 from ..services import access_control
 from ..utils.ip import get_real_ip
 from ..utils.response import success
+from ..utils.metrics import (
+    shortlink_created_total,
+    shortlink_redirect_total,
+    rate_limit_hits_total,
+)
 from ..extensions import db, get_redis
 from ..middleware.auth import auth_optional
 from ..services.rate_limit import check_rate_limit
@@ -51,6 +56,7 @@ def create_short_link():
             default_retry_after=cfg["RATE_LIMIT_RETRY_AFTER"],
         )
         if not result.allowed:
+            rate_limit_hits_total.inc({"scope": "global"})
             raise RateLimitError("请求过于频繁", retry_after=result.retry_after)
 
     from flask import g as _g
@@ -66,6 +72,7 @@ def create_short_link():
         channel=payload.get("channel"),
         advanced=payload.get("advanced"),
     )
+    shortlink_created_total.inc({"domain": sl.domain or "default"})
     # 创建时 pv/uv 必然为 0,last_visit_at 必然 None
     sl.visit_count = sl.visit_count or 0
     # 优先用记录中的 domain(自定义域名),否则回退 BASE_DOMAIN
@@ -137,6 +144,7 @@ def redirect_short_link(short_code):
     sl = svc.get_by_code(short_code)
     outcome, status = svc.redirect_pre_check(sl, cookies=request.cookies)
     if outcome == svc.RedirectOutcome.NOT_FOUND:
+        shortlink_redirect_total.inc({"status": "not_found"})
         raise NotFoundError("短码不存在")
 
     # ---- 访问控制 / 风控规则(PRD 模块三扩展) ----
@@ -158,15 +166,19 @@ def redirect_short_link(short_code):
             access_control.record_hit(short_code, ip, observed=True)
 
     if outcome == svc.RedirectOutcome.MALICIOUS:
+        shortlink_redirect_total.inc({"status": "malicious"})
         from ..middleware.error import ForbiddenError
         raise ForbiddenError("链接已被标记恶意")
     if outcome == svc.RedirectOutcome.GONE:
+        shortlink_redirect_total.inc({"status": "expired_or_gone"})
         from ..middleware.error import GoneError
         raise GoneError("短链已失效")
     if outcome == svc.RedirectOutcome.UNAUTHORIZED:
+        shortlink_redirect_total.inc({"status": "needs_password"})
         from ..middleware.error import UnauthorizedError
         raise UnauthorizedError("需要密码验证")
     if outcome == svc.RedirectOutcome.NOT_EFFECTIVE:
+        shortlink_redirect_total.inc({"status": "not_effective"})
         from ..middleware.error import ForbiddenError
         raise ForbiddenError("短链尚未生效")
 
@@ -178,4 +190,7 @@ def redirect_short_link(short_code):
             user_agent=request.headers.get("User-Agent"),
             referer=referer,
         )
+        shortlink_redirect_total.inc({"status": "ok"})
+    else:
+        shortlink_redirect_total.inc({"status": "bot_skipped"})
     return redirect(sl.long_url, code=302)
