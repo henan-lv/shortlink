@@ -94,7 +94,7 @@ def patch_link(short_code):
 
 
 def _serialize(sl, cfg) -> dict:
-    base = (sl.domain or cfg["BASE_DOMAIN"]).rstrip("/")
+    base = (sl.domain or cfg.get("BASE_DOMAIN") or (request.scheme + "://" + request.host)).rstrip("/")
     return {
         "id": sl.id,
         "short_code": sl.short_code,

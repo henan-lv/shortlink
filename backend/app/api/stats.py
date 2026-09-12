@@ -82,7 +82,8 @@ def _owned_or_404(short_code: str) -> ShortLink:
 
 
 def _full_url(sl: ShortLink) -> str:
-    return f"{current_app.config['BASE_DOMAIN']}/s/{sl.short_code}"
+    base = sl.domain or current_app.config.get("BASE_DOMAIN") or current_app.config["PREFERRED_URL_SCHEME"] + "://" + request.host
+    return f"{base.rstrip(chr(47))}/s/{sl.short_code}"
 
 
 # ==========================================================================

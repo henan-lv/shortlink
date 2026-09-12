@@ -52,7 +52,7 @@ class DefaultConfig:
     JSON_SORT_KEYS = False
 
     # 应用基础
-    BASE_DOMAIN = _env_str("BASE_DOMAIN", "http://localhost:5000").rstrip("/")
+    BASE_DOMAIN = _env_str("BASE_DOMAIN", "").rstrip("/")
 
     # ---------- 数据库(MySQL 5.7) ----------
     DB_HOST = _env("DB_HOST")
