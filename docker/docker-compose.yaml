@@ -29,6 +29,8 @@ services:
       GUNICORN_THREADS: ${GUNICORN_THREADS:-2}
     expose:
       - "5000"
+    networks:
+      - shortlink_net
     healthcheck:
       test: ["CMD", "curl", "-fsS", "http://127.0.0.1:5000/health"]
       interval: 30s
@@ -48,8 +50,15 @@ services:
         condition: service_healthy
     ports:
       - "${FRONTEND_PORT:-53607}:80"
+    networks:
+      - shortlink_net
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://127.0.0.1/healthz"]
       interval: 30s
       timeout: 3s
       retries: 3
+
+networks:
+  shortlink_net:
+    name: shortlink_net
+    driver: bridge
