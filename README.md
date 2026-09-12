@@ -26,6 +26,7 @@
 - 🛡️ 管理员后台:用户管理(增删改查 / 启停 / 重置密码 / 重置 API Key)
 - 🔑 用户级 API Key,支持接口调用鉴权
 - 🧰 Swagger 接口文档(`/apidocs`)
+- 📈 Prometheus 监控指标(`/metrics`):创建数 / 跳转结果 / 限流命中 / 请求耗时 / 短链总数
 - 🐳 一键 Docker 部署(仅前后端,DB / Redis 走云)
 
 ---
@@ -178,7 +179,33 @@ FLASK_APP=wsgi.py flask db upgrade     # 跑迁移建表
 python wsgi.py                          # 默认 http://127.0.0.1:5000
 ```
 
-Swagger 接口文档:<http://127.0.0.1:5000/apidocs>
+**接口文档:**
+
+- Swagger UI:<http://127.0.0.1:5000/apidocs>
+- Prometheus 监控指标:<http://127.0.0.1:5000/metrics>(文本格式,接 Prometheus / Grafana)
+
+**监控示例:**
+
+```bash
+curl http://127.0.0.1:5000/metrics | head -30
+# 关键指标:
+#   shortlink_created_total{domain="..."}     累计创建数
+#   shortlink_redirect_total{status="..."}    累计跳转数(ok/not_found/expired/...)
+#   rate_limit_hits_total{scope="..."}        限流命中
+#   shortlink_count{status="..."}             当前短链总数
+#   http_request_duration_seconds             请求耗时
+```
+
+接 Prometheus 只需在 `prometheus.yml` 加:
+
+```yaml
+scrape_configs:
+  - job_name: shortlink
+    scrape_interval: 15s
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["shortlink.lvhn.top:443"]
+```
 
 ### 3. 启动前端
 
