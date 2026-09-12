@@ -49,11 +49,16 @@
         </div>
       </div>
       <div class="nav-right">
-        <span class="nav-user">
+        <div class="user-chip" :title="auth.user?.username">
           <span class="user-dot"></span>
-          {{ auth.user?.username }}
-        </span>
-        <button class="nav-logout" @click="onLogout">LOGOUT</button>
+          <span class="user-name">{{ auth.user?.username }}</span>
+        </div>
+        <button class="nav-logout" :title="`退出登录(${auth.user?.username})`" @click="onLogout" aria-label="退出登录">
+          <svg viewBox="0 0 18 18" width="16" height="16" fill="none" aria-hidden="true">
+            <path d="M7 4H4a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M11 12l3-3-3-3M14 9H7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
       </div>
       <div class="nav-scan-clip" aria-hidden="true">
         <div class="nav-scan"></div>
@@ -220,21 +225,50 @@ async function onLogout() {
   animation: pulse-glow 2s ease-in-out infinite;
 }
 
-.nav-logout {
+.user-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 10px 0 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
   font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.15em;
-  padding: 4px 12px;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  max-width: 160px;
+}
+.user-chip .user-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.nav-logout {
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
   background: transparent;
   border: 1px solid var(--border);
-  border-radius: 3px;
+  border-radius: 999px;
   color: var(--text-muted);
-  text-transform: uppercase;
+  cursor: pointer;
+  transition: color var(--t-fast), border-color var(--t-fast), background-color var(--t-fast), box-shadow var(--t-fast), transform var(--t-fast);
 }
 .nav-logout:hover {
-  color: var(--danger);
+  color: #fff;
+  background: rgba(239, 68, 68, 0.12);
   border-color: var(--danger);
-  box-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);
+  transform: translateY(-1px);
+}
+.nav-logout:active {
+  transform: translateY(0);
 }
 
 /* 扫描线裁剪层:nav-scan 会从 -30% 滑到 100%,若不裁剪,元素右缘会顶出视口
@@ -282,7 +316,8 @@ async function onLogout() {
   .nav-brand a { font-size: 13px; }
   .nav-links { gap: 2px; }
   .nav-link { padding: 4px 10px; font-size: 12px; }
-  .nav-divider, .nav-user { display: none; }
+  .nav-divider, .user-chip { display: none; }
+  .nav-logout { margin-left: 0; }
   .main-content.is-inner { padding: 16px; }
 }
 </style>

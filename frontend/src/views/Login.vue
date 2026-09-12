@@ -38,14 +38,14 @@
               <label class="field-label" for="login-username">用户名</label>
               <div class="input-wrap">
                 <span class="input-prefix" aria-hidden="true">&gt;</span>
-                <input id="login-username" ref="usernameInput" v-model="username" type="text" required minlength="3" maxlength="64" autocomplete="username" :placeholder="mode === 'register' ? '用户名 · 至少 3 个字符' : 'demo'" />
+                <input id="login-username" ref="usernameInput" v-model="username" type="text" required minlength="3" maxlength="64" autocomplete="username" :placeholder="mode === 'register' ? '用户名 · 至少 3 个字符' : '请输入用户名'" />
               </div>
             </div>
             <div class="field">
               <label class="field-label" for="login-password">密码</label>
               <div class="input-wrap">
                 <span class="input-prefix" aria-hidden="true">#</span>
-                <input id="login-password" ref="passwordInput" v-model="password" type="password" required minlength="6" maxlength="64" autocomplete="current-password" :placeholder="mode === 'register' ? '密码 · 至少 6 位' : '••••••'" @keydown.meta.enter.prevent="onSubmit" @keydown.ctrl.enter.prevent="onSubmit" />
+                <input id="login-password" ref="passwordInput" v-model="password" type="password" required minlength="6" maxlength="64" autocomplete="current-password" :placeholder="mode === 'register' ? '密码 · 至少 6 位' : '请输入密码'" @keydown.meta.enter.prevent="onSubmit" @keydown.ctrl.enter.prevent="onSubmit" />
               </div>
             </div>
 
@@ -90,8 +90,8 @@ const auth = useAuthStore()
 const notify = useNotifyStore()
 
 const mode = ref('login')
-const username = ref('demo')
-const password = ref('demo123')
+const username = ref('')
+const password = ref('')
 const errorMsg = ref('')
 const loading = ref(false)
 
