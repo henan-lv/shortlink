@@ -1,0 +1,15 @@
+# 开发模式:backend 热重载、debug 开启、挂载源码卷
+# 用法:docker compose -f docker-compose.yml -f docker-compose.dev.yml up
+
+services:
+  backend:
+    command: ["python", "wsgi.py"]
+    environment:
+      FLASK_ENV: development
+      FLASK_DEBUG: "1"
+    volumes:
+      - ../backend:/app
+
+  nginx:
+    ports:
+      - "${NGINX_HTTP_PORT:-8080}:80"

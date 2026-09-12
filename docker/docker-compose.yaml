@@ -1,0 +1,55 @@
+services:
+  backend:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.backend
+    image: shortlink-backend:latest
+    container_name: shortlink-backend
+    restart: unless-stopped
+    environment:
+      FLASK_ENV: ${FLASK_ENV:-production}
+      SECRET_KEY: ${SECRET_KEY:?set SECRET_KEY in .env}
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT:-3306}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      DB_CHARSET: ${DB_CHARSET:-utf8mb4}
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT:-6379}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      REDIS_DB: ${REDIS_DB:-0}
+      SHORT_CODE_MIN_LENGTH: ${SHORT_CODE_MIN_LENGTH:-6}
+      SHORT_CODE_MAX_LENGTH: ${SHORT_CODE_MAX_LENGTH:-8}
+      SHORT_CODE_AFFINE_MULTIPLIER: ${SHORT_CODE_AFFINE_MULTIPLIER:-131}
+      SHORT_CODE_AFFINE_OFFSET: ${SHORT_CODE_AFFINE_OFFSET:-577}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost}
+      GUNICORN_BIND: 0.0.0.0:5000
+      GUNICORN_WORKERS: ${GUNICORN_WORKERS:-4}
+      GUNICORN_THREADS: ${GUNICORN_THREADS:-2}
+    expose:
+      - "5000"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:5000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+  frontend:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.frontend
+    image: shortlink-frontend:latest
+    container_name: shortlink-frontend
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "${FRONTEND_PORT:-53607}:80"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1/healthz"]
+      interval: 30s
+      timeout: 3s
+      retries: 3

@@ -1,0 +1,11 @@
+# 生产模式:backend 跑 gunicorn、关闭 debug、不挂载源码
+# 用法:docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+
+services:
+  backend:
+    command: ["gunicorn", "-c", "gunicorn.conf.py", "wsgi:app"]
+    environment:
+      FLASK_ENV: production
+      FLASK_DEBUG: "0"
+    volumes: []  # 不挂载源码,只用镜像内置
+    read_only: false

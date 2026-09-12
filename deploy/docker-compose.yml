@@ -1,0 +1,101 @@
+# =============================================================================
+# ShortLink 通用编排(开发 + 生产共用,具体差异见 dev / prod 子文件)
+# 服务:
+#   - nginx:统一入口,反向代理 + 静态资源
+#   - backend:Flask + gunicorn
+#   - mysql:MySQL 5.7(数据持久化)
+#   - redis:Redis 7(限流 + 缓存)
+# =============================================================================
+
+services:
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: shortlink_nginx
+    restart: unless-stopped
+    ports:
+      - "${NGINX_HTTP_PORT:-80}:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ../frontend/dist:/var/www/shortlink:ro  # 前端构建产物(可选)
+    depends_on:
+      - backend
+    networks:
+      - shortlink_net
+
+  backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    image: shortlink-backend:latest
+    container_name: shortlink_backend
+    restart: unless-stopped
+    env_file:
+      - .env
+      - ../backend/.env
+    volumes:
+      - ../backend:/app  # 开发模式热重载
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - shortlink_net
+    # 仅开发模式启用:docker-compose.dev.yml 会 override command
+
+  mysql:
+    image: mysql:5.7
+    container_name: shortlink_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpass}
+      MYSQL_DATABASE: ${DB_NAME:-shortlink}
+      MYSQL_USER: ${DB_USER:-shortlink}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-shortlink}
+      TZ: Asia/Shanghai
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --default-authentication-plugin=mysql_native_password
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./mysql/my.cnf:/etc/mysql/conf.d/my.cnf:ro
+      - ./mysql/init:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "${MYSQL_HOST_PORT:-3306}:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-p${MYSQL_ROOT_PASSWORD:-rootpass}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - shortlink_net
+
+  redis:
+    image: redis:7-alpine
+    container_name: shortlink_redis
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf:ro
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+    ports:
+      - "${REDIS_HOST_PORT:-6379}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+    networks:
+      - shortlink_net
+
+networks:
+  shortlink_net:
+    driver: bridge
+
+volumes:
+  mysql_data:
+  redis_data:
