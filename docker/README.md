@@ -111,7 +111,7 @@ cd /app && FLASK_APP=wsgi.py flask db upgrade
         ▼
 [shortlink-frontend nginx]:80   ←  静态 + /api/ /s/ 反代
         │
-        ▼  (docker 网络 shortlink_default)
+        ▼  (docker 网络 shortlink_net)
 [shortlink-backend gunicorn]:5000
         │
         ├──→ [云 MySQL]:3306  (凭 DB_* env)
