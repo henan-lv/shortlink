@@ -6,6 +6,7 @@
 
 - 📄 需求文档:[`docs/PRD.md`](docs/PRD.md)
 - 🏗️ 技术设计:[`docs/design.md`](docs/design.md)
+- 🗺️ 架构图(含 mermaid):[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
 - 🚀 云服务部署:[`docker/README.md`](docker/README.md)
 
 ---
@@ -265,6 +266,7 @@ shortlink-frontend (nginx :80 / :53607)
 | --- | --- |
 | [`docs/PRD.md`](docs/PRD.md) | 产品需求:功能清单、字段定义、业务规则 |
 | [`docs/design.md`](docs/design.md) | 技术设计:架构、模块、数据模型、接口、安全、性能 |
+| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | 架构图(9 张 mermaid):系统总览、请求链路、ER、部署拓扑、监控、CI/CD 等 |
 | [`docker/README.md`](docker/README.md) | 云服务部署:Docker Compose、环境变量、运维命令、排错 |
 
 ---
